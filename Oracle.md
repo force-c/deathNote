@@ -2,7 +2,72 @@
 
 [TOC]
 
-# 存储过程
+# Oracle
+
+## oracle分页
+
+> https://blog.csdn.net/use_admin/article/details/83622414
+
+> **1.无ORDER BY排序的写法。(效率最高)**
+> (经过测试，此方法成本最低，只嵌套一层，速度最快！即使查询的数据量再大，也几乎不受影响，速度依然！)
+
+```plsql
+SELECT *
+  FROM (SELECT ROWNUM AS rowno, t.*
+          FROM emp t
+         WHERE hire_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+                             AND TO_DATE ('20060731', 'yyyymmdd')
+           AND ROWNUM <= 20) table_alias
+ WHERE table_alias.rowno >= 10;
+```
+
+> **2.有ORDER BY排序的写法。(效率较高)**
+> (经过测试，此方法随着查询范围的扩大，速度也会越来越慢哦！)
+
+```plsql
+SELECT *
+  FROM (SELECT tt.*, ROWNUM AS rowno
+          FROM (  SELECT t.*
+                    FROM emp t
+                   WHERE hire_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+                                       AND TO_DATE ('20060731', 'yyyymmdd')
+                ORDER BY create_time DESC, emp_no) tt
+         WHERE ROWNUM <= 20) table_alias
+ WHERE table_alias.rowno >= 10;
+```
+
+> **3.无ORDER BY排序的写法。(建议使用方法1代替)**
+> (此方法随着查询数据量的扩张，速度会越来越慢哦！)
+
+```plsql
+SELECT *
+  FROM (SELECT ROWNUM AS rowno, t.*
+          FROM k_task t
+         WHERE flight_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+                               AND TO_DATE ('20060731', 'yyyymmdd')) table_alias
+ WHERE table_alias.rowno <= 20 AND table_alias.rowno >= 10;
+--TABLE_ALIAS.ROWNO  between 10 and 100;
+```
+
+> **4.有ORDER BY排序的写法.(建议使用方法2代替)**
+> (此方法随着查询范围的扩大，速度会越来越慢哦！)
+
+```plsql
+SELECT *
+  FROM (SELECT tt.*, ROWNUM AS rowno
+          FROM (  SELECT *
+                    FROM k_task t
+                   WHERE flight_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+                                         AND TO_DATE ('20060531', 'yyyymmdd')
+                ORDER BY fact_up_time, flight_no) tt) table_alias
+ WHERE table_alias.rowno BETWEEN 10 AND 20;
+```
+
+
+
+
+
+## 存储过程
 
 ```plsql
 -- 定义无参游标
