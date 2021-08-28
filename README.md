@@ -1,2 +1,2 @@
-# deathNote
+# note
 笔记
